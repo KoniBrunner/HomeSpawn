@@ -5,16 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import net.gravitydevelopment.updater.Updater;
-import net.gravitydevelopment.updater.Updater.UpdateResult;
-import net.gravitydevelopment.updater.Updater.UpdateType;
-
-import org.mcstats.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -24,6 +17,11 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.mcstats.Metrics;
+
+import net.gravitydevelopment.updater.Updater;
+import net.gravitydevelopment.updater.Updater.UpdateResult;
+import net.gravitydevelopment.updater.Updater.UpdateType;
 
 public class HomeSpawn extends JavaPlugin implements Listener {
 
@@ -184,189 +182,11 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 		saveDefaultConfig();
 		getConfig().options().copyDefaults(true);
 		saveConfig();
-		createSpawn();
-		createGlobalHomes();
-		createPlayerData();
-		createMessages();
-		createPasswords();
-	}
-
-	private void createPasswords() {
-		File file = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "PlayerData" + File.separator
-				+ "Passwords.yml");
-		if (!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void createMessages() {
-		File file2 = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "Messages.yml");
-		FileConfiguration getMessages = YamlConfiguration
-				.loadConfiguration(file2);
-		if (!file2.exists()) {
-			try {
-				file2.createNewFile();
-				getMessages.createSection("Home");
-				getMessages.createSection("Home.HomeSet");
-				getMessages.createSection("Home.SentHome");
-				getMessages.createSection("Home.NoHomeSet");
-				getMessages.createSection("Home.HomeRemoved");
-				getMessages.createSection("Home.LimitReached");
-				getMessages.createSection("Spawn");
-				getMessages.createSection("Spawn.NotSet");
-				getMessages.createSection("Spawn.SpawnSet");
-				getMessages.createSection("Spawn.SpawnNewSet");
-				getMessages.createSection("Spawn.SentToSpawn");
-				getMessages.createSection("Spawn.Removed");
-				getMessages.createSection("Wait");
-				getMessages.createSection("Error.Args");
-				getMessages.createSection("Error.Args+");
-				getMessages.createSection("Error.Args-");
-				getMessages.save(file2);
-				setDefaultMessages();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void createGlobalHomes() throws IOException {
-		File file = new File(getDataFolder().getAbsolutePath() + File.separator
-				+ "GlobalHomes.yml");
-		if (!file.exists()) {
-			file.createNewFile();
-			FileConfiguration getGlobalHomes = YamlConfiguration
-					.loadConfiguration(file);
-			getGlobalHomes.set("list", null);
-			getGlobalHomes.save(file);
-		}
-	}
-
-	private void setDefaultMessages() {
-		File file2 = new File(getDataFolder().getAbsolutePath()
-				+ File.separator + "Messages.yml");
-		FileConfiguration getMessages = YamlConfiguration
-				.loadConfiguration(file2);
-		if (file2.exists()) {
-			getMessages.set("Home.HomeSet", "Home Set, You Can Now Use /home");
-			getMessages.set("Home.SentHome", "Welcome Home");
-			getMessages.set("Home.NoHomeSet",
-					"You First Need To Set a Home With /sethome");
-			getMessages.set("Home.HomeRemoved", "Home Removed");
-			getMessages.set("Home.LimitReached",
-					"Sorry But You have Reached The Max Limit Of Homes, "
-							+ "Please Use /delhome To Remove A Home");
-			getMessages.set("Spawn.NotSet",
-					"You First Need To Set a Spawn With /setspawn");
-			getMessages.set("Spawn.SpawnSet",
-					"Spawn Set, You Can Now Use /spawn");
-			getMessages
-					.set("Spawn.SpawnNewSet",
-							"Spawn New Set, All New Players Will Be Sent To This Location");
-			getMessages.set("Spawn.SentToSpawn", "Welcome To Spawn");
-			getMessages.set("Spawn.Removed", "Spawn Removed!");
-			getMessages
-					.set("Wait",
-							"You Must Wait {time} Seconds Before You Can Be Teleported,"
-									+ " If You Move Or Get Hit By Another Player Your Teleport Will Be Canceled");
-			getMessages.set("Error.Args+", "Too Much Infomation!");
-			getMessages.set("Error.Args-", "Not Enough Infomation");
-			getMessages.set("Error.Args", "Too Little or Too Much Infomation");
-			try {
-				getMessages.save(file2);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			createMessages();
-		}
-
-	}
-
-	private void createPlayerData() {
-		File theDir = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "PlayerData");
-		File theDir1 = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "PlayerData" + File.separator
-				+ "PlayerNames");
-		if (!theDir.exists()) {
-			logger.info("[HomeSpawn] Creating PlayerData Directory!");
-			theDir.mkdir();
-		}
-		if (!theDir1.exists()) {
-			theDir1.mkdir();
-		}
-	}
-
-	private void createSpawn() {
-		File file = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "Spawn.yml");
-		FileConfiguration getSpawn = YamlConfiguration.loadConfiguration(file);
-		if (!file.exists()) {
-			try {
-				file.createNewFile();
-				getSpawn.createSection("spawn.X");
-				getSpawn.createSection("spawn.Y");
-				getSpawn.createSection("spawn.Z");
-				getSpawn.createSection("spawn.World");
-				getSpawn.createSection("spawn.Yaw");
-				getSpawn.createSection("spawn.Pitch");
-				getSpawn.createSection("spawnnew.X");
-				getSpawn.createSection("spawnnew.Y");
-				getSpawn.createSection("spawnnew.Z");
-				getSpawn.createSection("spawnnew.World");
-				getSpawn.createSection("spawnnew.Yaw");
-				getSpawn.createSection("spawnnew.Pitch");
-				try {
-					getSpawn.save(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create spawn file!");
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	public void spawnnew(Player player) {
-		File file = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "Spawn.yml");
-		FileConfiguration getSpawn = YamlConfiguration.loadConfiguration(file);
-		try {
-			getSpawn.load(file);
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-		if (getSpawn.get("spawnnew.SpawnSet") != null
-				&& getSpawn.getString("spawnnew.SpawnSet").equalsIgnoreCase(
-						"yes")) {
-			int x = getSpawn.getInt("spawnnew.X");
-			int y = getSpawn.getInt("spawnnew.Y");
-			int z = getSpawn.getInt("spawnnew.Z");
-			float yaw = getSpawn.getInt("spawnnew.Yaw");
-			float pitch = getSpawn.getInt("spawnnew.Pitch");
-			String cworld = getSpawn.getString("spawnnew.World");
-			World world = getServer().getWorld(cworld);
-			Location spawnnew = new Location(world, x, y, z, yaw, pitch);
-			spawnnew.add(0.5, 0, 0.5);
-			player.teleport(spawnnew);
-			logger.info("[HomeSpawn] Player " + player.getName()
-					+ " Was Sent To New Spawn");
-		} else {
-			logger.info("[HomeSpawn] There Is No New Spawn Set And Therefore The Player Wasnt Sent To The New Spawn");
-		}
+		ConfigSingleton.getInstance(this);
 	}
 
 	public void reload(Player player) throws IOException {
-		if (player != null) {
+		if (player != null) { //TODO no rights check to reload?
 			Configs();
 			player.sendMessage(ChatColor.GOLD
 					+ "You have reloaded the configs for Homespawn!");
@@ -379,7 +199,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 	}
 
 	public void help(Player player) {
-		if (player != null) {
+		if (player != null) { //TODO no rights check for help?
 			player.sendMessage(ChatColor.GOLD + "-----------------------"
 					+ ChatColor.RED + "Homespawn" + ChatColor.GOLD
 					+ "-----------------------");
