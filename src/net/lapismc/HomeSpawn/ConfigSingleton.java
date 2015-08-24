@@ -3,6 +3,7 @@ package net.lapismc.HomeSpawn;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -10,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.entity.Player;
 
 public class ConfigSingleton {
 	private static ConfigSingleton instance = null;
@@ -23,7 +23,8 @@ public class ConfigSingleton {
 	public FileConfiguration GlobalHomes = null;
 	public FileConfiguration Messages = null;
 	public FileConfiguration Update = null;
-	
+	public FileConfiguration Passwords = null;
+
 	protected ConfigSingleton(JavaPlugin plugin) {
 		this.plugin = plugin;
 		logger = plugin.getLogger();
@@ -41,20 +42,34 @@ public class ConfigSingleton {
 		}
 		return instance;
 	}
-	
-	public FileConfiguration getPlayerConfig(Player player)
-	{
-		if (playerConfigs.containsKey(player.getUniqueId().toString()))
-		{
-			return playerConfigs.get(player.getUniqueId().toString());
+
+	public static void Reset() {
+		instance = null;
+	}
+
+	public void savePlayerConfig(Player player) {
+		if (playerConfigs.containsKey(player.getUniqueId().toString())) {
+			File file = new File(plugin.getDataFolder() + File.separator + "PlayerData" + File.separator
+					+ player.getUniqueId().toString() + ".yml");
+			try {
+				playerConfigs.get(player.getUniqueId().toString()).save(file);
+			} catch (IOException e) {
+				logger.severe("[HomeSpawn] Couldn't save player file!");
+				e.printStackTrace();
+			}
 		}
-		else
-		{
-			File file = new File(plugin.getDataFolder() + File.separator + "PlayerData" + File.separator + player.getUniqueId().toString() + ".yml");
+	}
+
+	public FileConfiguration getPlayerConfig(Player player) {
+		if (playerConfigs.containsKey(player.getUniqueId().toString())) {
+			return playerConfigs.get(player.getUniqueId().toString());
+		} else {
+			File file = new File(plugin.getDataFolder() + File.separator + "PlayerData" + File.separator
+					+ player.getUniqueId().toString() + ".yml");
 			FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
-			
+
 			if (!file.exists()) {
-				logger.info("[HomeSpawn] Creating Player("+player.getUniqueId().toString()+") configuration file!");
+				logger.info("[HomeSpawn] Creating Player(" + player.getUniqueId().toString() + ") configuration file!");
 				try {
 					file.createNewFile();
 				} catch (IOException e) {
@@ -62,7 +77,7 @@ public class ConfigSingleton {
 					e.printStackTrace();
 				}
 			}
-			
+
 			boolean changedSomething = false;
 			if (!playerConfig.contains("Name")) {
 				playerConfig.createSection("Name");
@@ -74,20 +89,71 @@ public class ConfigSingleton {
 				playerConfig.set("UUID", player.getUniqueId().toString());
 				changedSomething = true;
 			}
-			if (!playerConfig.contains("HasHome")) {
-				playerConfig.createSection("HasHome");
-				playerConfig.set("HasHome", "No");
-				changedSomething = true;
-			}
 			if (!playerConfig.contains("Numb")) {
 				playerConfig.createSection("Numb");
 				playerConfig.set("Numb", 0);
 				changedSomething = true;
 			}
+			if (!playerConfig.contains("List")) {
+				playerConfig.createSection("List");
+				changedSomething = true;
+			}
+			// ----------------------------------------------------------------
+			// Until next dash line used for migrating old data. Remove after
+			// some releases
 			if (playerConfig.contains(player.getName() + ".Numb")) {
 				playerConfig.set("Numb", playerConfig.getInt(player.getName() + ".Numb"));
 				changedSomething = true;
 			}
+			if (playerConfig.contains(player.getName() + ".list")) {
+				playerConfig.set("List", playerConfig.getStringList(player.getName() + ".list"));
+				changedSomething = true;
+			}
+			List<String> list = playerConfig.getStringList("List");
+			if (list.contains("Home")) {
+				if (playerConfig.contains(player.getDisplayName() + ".x")
+						&& playerConfig.contains(player.getDisplayName() + ".y")
+						&& playerConfig.contains(player.getDisplayName() + ".z")
+						&& playerConfig.contains(player.getDisplayName() + ".world")
+						&& playerConfig.contains(player.getDisplayName() + ".Yaw")
+						&& playerConfig.contains(player.getDisplayName() + ".Pitch")) {
+					if (!playerConfig.contains("Home.x")) {
+						playerConfig.createSection("Home.x");
+						playerConfig.set("Home.x", playerConfig.getInt(player.getDisplayName() + ".x"));
+						changedSomething = true;
+					}
+					if (!playerConfig.contains("Home.y")) {
+						playerConfig.createSection("Home.y");
+						playerConfig.set("Home.y", playerConfig.getInt(player.getDisplayName() + ".y"));
+						changedSomething = true;
+					}
+					if (!playerConfig.contains("Home.z")) {
+						playerConfig.createSection("Home.z");
+						playerConfig.set("Home.z", playerConfig.getInt(player.getDisplayName() + ".z"));
+						changedSomething = true;
+					}
+					if (!playerConfig.contains("Home.world")) {
+						playerConfig.createSection("Home.world");
+						playerConfig.set("Home.world", playerConfig.getString(player.getDisplayName() + ".world"));
+						changedSomething = true;
+					}
+					if (!playerConfig.contains("Home.Yaw")) {
+						playerConfig.createSection("Home.Yaw");
+						playerConfig.set("Home.Yaw", playerConfig.getDouble(player.getDisplayName() + ".Yaw"));
+						changedSomething = true;
+					}
+					if (!playerConfig.contains("Home.Pitch")) {
+						playerConfig.createSection("Home.Pitch");
+						playerConfig.set("Home.Pitch", playerConfig.getDouble(player.getDisplayName() + ".Pitch"));
+						changedSomething = true;
+					}
+				} else {
+					list.remove("Home");
+					playerConfig.set("List", list);
+					changedSomething = true;
+				}
+			}
+			// ----------------------------------------------------------------
 			if (!playerConfig.getString("Name").equals(player.getName())) {
 				playerConfig.set("Name", player.getName());
 				changedSomething = true;
@@ -102,7 +168,7 @@ public class ConfigSingleton {
 			}
 
 			playerConfigs.put(player.getUniqueId().toString(), playerConfig);
-			
+
 			return playerConfig;
 		}
 	}
@@ -119,6 +185,16 @@ public class ConfigSingleton {
 				logger.severe("[HomeSpawn] Couldn't create PlayerData directory!");
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public void saveSpawn() {
+		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Spawn.yml");
+		try {
+			Spawn.save(file);
+		} catch (IOException e) {
+			logger.severe("[HomeSpawn] Couldn't save Spawn file!");
+			e.printStackTrace();
 		}
 	}
 
@@ -154,6 +230,16 @@ public class ConfigSingleton {
 		}
 	}
 
+	public void saveGlobalHomes() {
+		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "GlobalHomes.yml");
+		try {
+			GlobalHomes.save(file);
+		} catch (IOException e) {
+			logger.severe("[HomeSpawn] Couldn't save GlobalHomes file!");
+			e.printStackTrace();
+		}
+	}
+
 	private void createGlobalHomes() {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "GlobalHomes.yml");
 		GlobalHomes = YamlConfiguration.loadConfiguration(file);
@@ -165,6 +251,28 @@ public class ConfigSingleton {
 				logger.severe("[HomeSpawn] Couldn't create GlobalHomes file!");
 				e.printStackTrace();
 			}
+		}
+		boolean changedSomething = false;
+		if (!GlobalHomes.contains("List")) {
+			GlobalHomes.createSection("List");
+			changedSomething = true;
+		}
+		if (changedSomething) {
+			try {
+				GlobalHomes.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void saveUpdate() {
+		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Update.yml");
+		try {
+			Update.save(file);
+		} catch (IOException e) {
+			logger.severe("[HomeSpawn] Couldn't save Update file!");
+			e.printStackTrace();
 		}
 	}
 
@@ -182,6 +290,16 @@ public class ConfigSingleton {
 		}
 	}
 
+	public void saveMessages() {
+		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Messages.yml");
+		try {
+			Messages.save(file);
+		} catch (IOException e) {
+			logger.severe("[HomeSpawn] Couldn't save Messages file!");
+			e.printStackTrace();
+		}
+	}
+
 	private void createMessages() {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Messages.yml");
 		Messages = YamlConfiguration.loadConfiguration(file);
@@ -196,9 +314,9 @@ public class ConfigSingleton {
 		}
 		// Better to check independent if file exists or not. that way we can
 		// also migrate old files to newer version.
-		String[] sections = new String[] { "Home.HomeSet", "Home.SentHome", "Home.NoHomeSet", "Home.HomeRemoved",
-				"Home.LimitReached", "Spawn.NotSet", "Spawn.SpawnSet", "Spawn.SpawnNewSet", "Spawn.SentToSpawn",
-				"Spawn.Removed", "Wait", "Error.Args+", "Error.Args-", "Error.Args" };
+		String[] sections = new String[] { "Home.HomeSet", "Home.SentHome", "Home.NoHomeSet", "Home.NotVip",
+				"Home.HomeRemoved", "Home.LimitReached", "Spawn.NotSet", "Spawn.SpawnSet", "Spawn.SpawnNewSet",
+				"Spawn.SentToSpawn", "Spawn.Removed", "Wait", "Error.Args+", "Error.Args-", "Error.Args" };
 		boolean changedSomething = false;
 		for (int s = 0; s < sections.length; s++) {
 			if (!Messages.contains(sections[s])) {
@@ -210,6 +328,7 @@ public class ConfigSingleton {
 		String[][] messages = new String[][] { { "Home.HomeSet", "Home Set, You Can Now Use /home" },
 				{ "Home.SentHome", "Welcome Home" }, { "Home.NoHomeSet", "You First Need To Set a Home With /sethome" },
 				{ "Home.HomeRemoved", "Home Removed" },
+				{ "Home.NotVip", "Sorry but you are not a VIP. You can not use multiple homes." },
 				{ "Home.LimitReached",
 						"Sorry But You have Reached The Max Limit Of Homes, please Use /delhome To Remove A Home" },
 				{ "Spawn.NotSet", "You First Need To Set a Spawn With /setspawn" },
@@ -218,8 +337,11 @@ public class ConfigSingleton {
 				{ "Spawn.SentToSpawn", "Welcome To Spawn" }, { "Spawn.Removed", "Spawn Removed!" },
 				{ "Wait",
 						"You Must Wait {time} Seconds Before You Can Be Teleported, If You Move Or Get Hit By Another Player Your Teleport Will Be Canceled" },
+				{ "Error.Permission", "You don't have permission to do that!" },
 				{ "Error.Args+", "Too Much Infomation!" }, { "Error.Args-", "Not Enough Infomation" },
-				{ "Error.Args", "Too Little or Too Much Infomation" } };
+				{ "Error.Args", "Too Little or Too Much Infomation" },
+				{ "Home.NotFound", "A home with this name does not exist!" },
+				{ "Home.Reserved", "That's a reserved home name!" } };
 		// If a message is null or empty, we set the default value
 		for (int s = 0; s < messages.length; s++) {
 			if (Messages.get(messages[s][0]) != null && !Messages.getString(messages[s][0]).isEmpty()) {
@@ -237,9 +359,21 @@ public class ConfigSingleton {
 		}
 	}
 
+	public void savePasswords() {
+		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "PlayerData" + File.separator
+				+ "Passwords.yml");
+		try {
+			Passwords.save(file);
+		} catch (IOException e) {
+			logger.severe("[HomeSpawn] Couldn't save Passwords file!");
+			e.printStackTrace();
+		}
+	}
+
 	private void createPasswords() {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "PlayerData" + File.separator
 				+ "Passwords.yml");
+		Passwords = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
 			logger.info("[HomeSpawn] Creating Passwords configuration file!");
 			try {

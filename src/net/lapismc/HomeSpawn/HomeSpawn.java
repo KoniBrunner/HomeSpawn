@@ -58,30 +58,25 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 				logger.severe("[HomeSpawn] Metrics Failed To Start!");
 			}
 		} else {
-			getLogger()
-					.info("Metrics wasnt started because it is disabled in the config!");
+			getLogger().info("Metrics wasnt started because it is disabled in the config!");
 		}
 	}
 
 	private void Update() {
 		if (getConfig().getBoolean("AutoUpdate")) {
-			Updater updater = new Updater(this, 86785, this.getFile(),
-					UpdateType.DEFAULT, true);
+			Updater updater = new Updater(this, 86785, this.getFile(), UpdateType.DEFAULT, true);
 			updatecheck(updater);
 		} else {
-			Updater updater = new Updater(this, 86785, this.getFile(),
-					UpdateType.NO_DOWNLOAD, true);
+			Updater updater = new Updater(this, 86785, this.getFile(), UpdateType.NO_DOWNLOAD, true);
 			updatecheck(updater);
 		}
 	}
 
 	private void updatecheck(Updater updater) {
-		File file = new File(this.getDataFolder().getAbsolutePath()
-				+ File.separator + "Update.yml");
+		File file = new File(this.getDataFolder().getAbsolutePath() + File.separator + "Update.yml");
 		FileConfiguration getUpdate = YamlConfiguration.loadConfiguration(file);
 		if (updater.getResult() == UpdateResult.SUCCESS) {
-			this.getLogger().info(
-					"Updated, Reload or restart to install the update!");
+			this.getLogger().info("Updated, Reload or restart to install the update!");
 		} else if (updater.getResult() == UpdateResult.NO_UPDATE) {
 			this.getLogger().info("No Update Available");
 			if (file.exists()) {
@@ -115,11 +110,10 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 					e.printStackTrace();
 				}
 			}
-		} else if (updater.getResult() == UpdateResult.UPDATE_AVAILABLE
-				&& updater.getResult() != UpdateResult.SUCCESS) {
-			this.getLogger().info(
-					"An update is Available for HomeSpawn, It can be downloaded from,"
-							+ " dev.bukkit.org/bukkit-plugins/homespawn");
+		} else
+			if (updater.getResult() == UpdateResult.UPDATE_AVAILABLE && updater.getResult() != UpdateResult.SUCCESS) {
+			this.getLogger().info("An update is Available for HomeSpawn, It can be downloaded from,"
+					+ " dev.bukkit.org/bukkit-plugins/homespawn");
 			if (file.exists()) {
 				if (!getConfig().getBoolean("AutoUpdate")) {
 					if (getUpdate.contains("Avail")) {
@@ -149,8 +143,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 				}
 			}
 		} else {
-			this.getLogger().severe(
-					ChatColor.RED + "Something Went Wrong Updating!");
+			this.getLogger().severe(ChatColor.RED + "Something Went Wrong Updating!");
 			getUpdate.set("Avail", "false");
 		}
 		try {
@@ -166,8 +159,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 	}
 
 	public void Enable() {
-		logger.info(" V." + getDescription().getVersion()
-				+ " Has Been Enabled!");
+		logger.info(" V." + getDescription().getVersion() + " Has Been Enabled!");
 		PluginManager pm = getServer().getPluginManager();
 		pl = new HomeSpawnListener(this);
 		pm.registerEvents(this.pl, this);
@@ -186,51 +178,38 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 	}
 
 	public void reload(Player player) throws IOException {
-		if (player != null) { //TODO no rights check to reload?
+		if (player != null) { // TODO no rights check to reload?
+			ConfigSingleton.Reset();
 			Configs();
-			player.sendMessage(ChatColor.GOLD
-					+ "You have reloaded the configs for Homespawn!");
-			Bukkit.broadcast(ChatColor.GOLD + "Player " + ChatColor.RED
-					+ player.getName() + ChatColor.GOLD
+			player.sendMessage(ChatColor.GOLD + "You have reloaded the configs for Homespawn!");
+			Bukkit.broadcast(ChatColor.GOLD + "Player " + ChatColor.RED + player.getName() + ChatColor.GOLD
 					+ " Has Reloaded Homespawn!", "homespawn.admin");
-			this.logger.info("Player " + player.getName()
-					+ " Has Reloaded Homespawn!");
+			this.logger.info("Player " + player.getName() + " Has Reloaded Homespawn!");
 		}
 	}
 
 	public void help(Player player) {
-		if (player != null) { //TODO no rights check for help?
-			player.sendMessage(ChatColor.GOLD + "-----------------------"
-					+ ChatColor.RED + "Homespawn" + ChatColor.GOLD
+		if (player != null) { // TODO no rights check for help?
+			player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn" + ChatColor.GOLD
 					+ "-----------------------");
 			player.sendMessage(ChatColor.RED + "[name] = VIP Only");
-			player.sendMessage(ChatColor.RED + "/home [name]:" + ChatColor.GOLD
-					+ " Sends You To The Home Specified");
-			player.sendMessage(ChatColor.RED + "/sethome [name]:"
-					+ ChatColor.GOLD
-					+ " Sets Your Home At Your Current Location");
-			player.sendMessage(ChatColor.RED + "/delhome [name]:"
-					+ ChatColor.GOLD + " Removes The Specified Home");
-			player.sendMessage(ChatColor.RED + "/spawn:" + ChatColor.GOLD
-					+ " Sends You To Spawn");
+			player.sendMessage(ChatColor.RED + "/home [name]:" + ChatColor.GOLD + " Sends You To The Home Specified");
+			player.sendMessage(
+					ChatColor.RED + "/sethome [name]:" + ChatColor.GOLD + " Sets Your Home At Your Current Location");
+			player.sendMessage(ChatColor.RED + "/delhome [name]:" + ChatColor.GOLD + " Removes The Specified Home");
+			player.sendMessage(ChatColor.RED + "/spawn:" + ChatColor.GOLD + " Sends You To Spawn");
 			if (player.hasPermission("homespawn.admin")) {
-				player.sendMessage(ChatColor.RED + "/setspawn:"
-						+ ChatColor.GOLD + " Sets The Server Spawn");
-				player.sendMessage(ChatColor.RED + "/setspawn new:"
-						+ ChatColor.GOLD
+				player.sendMessage(ChatColor.RED + "/setspawn:" + ChatColor.GOLD + " Sets The Server Spawn");
+				player.sendMessage(ChatColor.RED + "/setspawn new:" + ChatColor.GOLD
 						+ " All New Players Will Be Sent To This Spawn");
-				player.sendMessage(ChatColor.RED + "/delspawn:"
-						+ ChatColor.GOLD + " Removes The Server Spawn");
-				player.sendMessage(ChatColor.RED + "/homespawn:"
-						+ ChatColor.GOLD + " Displays Plugin Infomation");
-				player.sendMessage(ChatColor.RED + "/homespawn reload:"
-						+ ChatColor.GOLD + " Reloads The Plugin Configs");
-				player.sendMessage(ChatColor.GOLD
-						+ "---------------------------------------------------------");
+				player.sendMessage(ChatColor.RED + "/delspawn:" + ChatColor.GOLD + " Removes The Server Spawn");
+				player.sendMessage(ChatColor.RED + "/homespawn:" + ChatColor.GOLD + " Displays Plugin Infomation");
+				player.sendMessage(
+						ChatColor.RED + "/homespawn reload:" + ChatColor.GOLD + " Reloads The Plugin Configs");
+				player.sendMessage(ChatColor.GOLD + "---------------------------------------------------------");
 				return;
 			} else {
-				player.sendMessage(ChatColor.GOLD
-						+ "---------------------------------------------------------");
+				player.sendMessage(ChatColor.GOLD + "---------------------------------------------------------");
 			}
 
 		} else {
@@ -266,8 +245,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 									Location Tele = HomeSpawnLocations.get(p);
 									if (!Tele.equals(null)) {
 										p.teleport(Tele);
-										p.sendMessage(ChatColor.GOLD
-												+ "Teleporting...");
+										p.sendMessage(ChatColor.GOLD + "Teleporting...");
 										HomeSpawnTimeLeft.remove(p);
 										HomeSpawnLocations.remove(p);
 									} else {

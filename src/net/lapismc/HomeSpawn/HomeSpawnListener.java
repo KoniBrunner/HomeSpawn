@@ -35,8 +35,7 @@ public class HomeSpawnListener implements Listener {
 					&& ConfigSingleton.getInstance(plugin).Update.getString("Avail").equalsIgnoreCase("true")) {
 				if (!plugin.getConfig().getBoolean("AutoUpdate")
 						&& plugin.getConfig().getBoolean("UpdateNotification")) {
-					player.sendMessage(ChatColor.GOLD
-							+ "[HomeSpawn] An update is available on Bukkit Dev");
+					player.sendMessage(ChatColor.GOLD + "[HomeSpawn] An update is available on Bukkit Dev");
 				}
 			}
 		}
@@ -63,8 +62,7 @@ public class HomeSpawnListener implements Listener {
 					if (!Players.contains(p)) {
 						plugin.HomeSpawnLocations.put(p, null);
 						plugin.HomeSpawnTimeLeft.remove(p);
-						p.sendMessage(ChatColor.GOLD
-								+ "Teleport Canceled Because You Moved!");
+						p.sendMessage(ChatColor.GOLD + "Teleport Canceled Because You Moved!");
 					} else {
 						e.setCancelled(true);
 						plugin.HomeSpawnTimeLeft.put(p, 1);
@@ -85,8 +83,7 @@ public class HomeSpawnListener implements Listener {
 					final Arrow arrow = (Arrow) Hitter;
 					if (arrow.getShooter() instanceof Player) {
 						plugin.HomeSpawnLocations.put(p, null);
-						p.sendMessage(ChatColor.GOLD
-								+ "Teleport Canceled Because You Were Hit!");
+						p.sendMessage(ChatColor.GOLD + "Teleport Canceled Because You Were Hit!");
 					} else if (arrow.getShooter() instanceof Skeleton) {
 						Players.add(p);
 						e.setCancelled(true);
@@ -94,18 +91,15 @@ public class HomeSpawnListener implements Listener {
 				}
 				if (Hitter instanceof Player || Hitter instanceof Wolf) {
 					plugin.HomeSpawnLocations.put(p, null);
-					p.sendMessage(ChatColor.GOLD
-							+ "Teleport Canceled Because You Were Hit!");
+					p.sendMessage(ChatColor.GOLD + "Teleport Canceled Because You Were Hit!");
 				} else {
 					Players.add(p);
 					e.setCancelled(true);
 				}
-				if (Hitter instanceof Player || Hitter instanceof Wolf
-						|| Hitter instanceof Arrow) {
+				if (Hitter instanceof Player || Hitter instanceof Wolf || Hitter instanceof Arrow) {
 					plugin.HomeSpawnLocations.put(p, null);
 					plugin.HomeSpawnTimeLeft.remove(p);
-					p.sendMessage(ChatColor.GOLD
-							+ "Teleport Canceled Because You Were Hit!");
+					p.sendMessage(ChatColor.GOLD + "Teleport Canceled Because You Were Hit!");
 				} else {
 					e.setCancelled(false);
 				}
