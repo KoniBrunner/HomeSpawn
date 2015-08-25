@@ -48,7 +48,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 				if (player.hasPermission("homespawn.player")) {
 					FileConfiguration getHomes = ConfigSingleton.getInstance(plugin).getPlayerConfig(player);
 					if (args.length == 0) {
-						createHomeLocation(player, getHomes, "Home");
+						createHomeLocation(player, getHomes, "home");
 						player.sendMessage(ChatColor.GOLD
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.HomeSet"));
 					} else if (args.length == 1) {
@@ -69,7 +69,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.Reserved"));
 							return false;
 						}
-						createHomeLocation(player, getHomes, args[0]);
+						createHomeLocation(player, getHomes, args[0].toLowerCase());
 						player.sendMessage(ChatColor.GOLD
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.HomeSet"));
 					} else {
@@ -77,6 +77,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 								ChatColor.RED + ConfigSingleton.getInstance(plugin).Messages.getString("Error.Args+"));
 					}
 					ConfigSingleton.getInstance(plugin).savePlayerConfig(player);
+					return true;
 				} else {
 					player.sendMessage(ChatColor.DARK_RED
 							+ ConfigSingleton.getInstance(plugin).Messages.getString("Error.Permission"));
@@ -91,15 +92,16 @@ public class HomeSpawnCommand implements CommandExecutor {
 						return false;
 					}
 					if (args.length == 0) {
-						sendToHomeLocation(player, getHomes, "Home");
+						sendToHomeLocation(player, getHomes, "home");
 					} else if (args.length == 1) {
 						if (!player.hasPermission("homespawn.vip") && !player.hasPermission("homespawn.admin")) {
 							player.sendMessage(ChatColor.RED
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.NotVip"));
 							return false;
 						}
-						sendToHomeLocation(player, getHomes, args[0]);
+						sendToHomeLocation(player, getHomes, args[0].toLowerCase());
 					}
+					return true;
 				} else {
 					player.sendMessage(ChatColor.DARK_RED
 							+ ConfigSingleton.getInstance(plugin).Messages.getString("Error.Permission"));
@@ -109,14 +111,15 @@ public class HomeSpawnCommand implements CommandExecutor {
 					FileConfiguration getHomes = ConfigSingleton.getInstance(plugin).getPlayerConfig(player);
 					List<String> list = getHomes.getStringList("List");
 					if (args.length == 1) {
-						if (!list.contains(args[0])) {
-							list.remove(args[0]);
+						if (list.contains(args[0].toLowerCase())) {
+							list.remove(args[0].toLowerCase());
 							getHomes.set("List", list);
 							int HomesNumb = getHomes.getInt("Numb");
 							getHomes.set("Numb", HomesNumb - 1);
 							ConfigSingleton.getInstance(plugin).savePlayerConfig(player);
 							player.sendMessage(ChatColor.GOLD
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.HomeRemoved"));
+							return true;
 						} else {
 							showHomeNotFound(player, getHomes, list);
 						}
@@ -153,8 +156,10 @@ public class HomeSpawnCommand implements CommandExecutor {
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Spawn.SpawnNewSet"));
 					} else {
 						plugin.help(player);
+						return false;
 					}
 					ConfigSingleton.getInstance(plugin).saveSpawn();
+					return true;
 				} else {
 					player.sendMessage(ChatColor.DARK_RED
 							+ ConfigSingleton.getInstance(plugin).Messages.getString("Error.Permission"));
@@ -174,6 +179,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 						Location Spawn = new Location(world, x, y, z, yaw, pitch);
 						Spawn.add(0.5, 0, 0.5);
 						TeleportPlayer(player, Spawn, "Spawn");
+						return true;
 					} else {
 						player.sendMessage(
 								ChatColor.RED + ConfigSingleton.getInstance(plugin).Messages.getString("Spawn.NotSet"));
@@ -194,6 +200,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 						player.sendMessage(ChatColor.GOLD
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Spawn.Removed"));
 						ConfigSingleton.getInstance(plugin).saveSpawn();
+						return true;
 					}
 				} else {
 					player.sendMessage(ChatColor.DARK_RED
@@ -211,6 +218,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 							String StringList = list3.replace("]", " ");
 							player.sendMessage(ChatColor.RED + StringList);
 						}
+						return true;
 					} else {
 						player.sendMessage(ChatColor.DARK_RED
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.NoHomeSet"));
@@ -244,6 +252,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 					} else if (args[0].equalsIgnoreCase("help")) {
 						plugin.help(player);
 					}
+					return true;
 				} else {
 					player.sendMessage("That Is Not A Recognised Command, Use /homespawn help For Commands");
 				}
@@ -271,6 +280,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 								player.sendMessage(ChatColor.RED + "Your 2 passwords didn't match!");
 							}
 						}
+						return true;
 					} else if (args.length == 1) {
 						PassHelp(player);
 					}
@@ -311,6 +321,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 							getGlobalHomes.set("List", list);
 						}
 						ConfigSingleton.getInstance(plugin).saveGlobalHomes();
+						return true;
 					} else {
 						player.sendMessage(ChatColor.RED + "To much infomation");
 						player.sendMessage(ChatColor.RED + "Usage: /setglobalhome (home name)");
@@ -340,7 +351,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 			World world = plugin.getServer().getWorld(cworld);
 			Location home = new Location(world, x, y, z, yaw, pitch);
 			home.add(0.5, 0, 0.5);
-			TeleportPlayer(player, home, "Home");
+			TeleportPlayer(player, home, homeName);
 		} else {
 			showHomeNotFound(player, getHomes, list);
 		}
@@ -353,7 +364,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 				String list2 = list.toString();
 				String list3 = list2.replace("[", " ");
 				String StringList = list3.replace("]", " ");
-				player.sendMessage(ChatColor.GOLD + "Your Current Homes Are:");
+				player.sendMessage(ChatColor.GOLD + ConfigSingleton.getInstance(plugin).Messages.getString("Home.Current"));
 				player.sendMessage(ChatColor.RED + StringList);
 			}
 		}

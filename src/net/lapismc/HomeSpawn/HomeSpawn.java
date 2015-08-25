@@ -264,20 +264,21 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 	}
 
 	public void Commands() {
-		this.getCommand("home").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("sethome").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("delhome").setExecutor(new HomeSpawnCommand(this));
+		HomeSpawnCommand command = new HomeSpawnCommand(this);
+		this.getCommand("home").setExecutor(command);
+		this.getCommand("sethome").setExecutor(command);
+		this.getCommand("delhome").setExecutor(command);
+		this.getCommand("homelist").setExecutor(command);
 		// this.getCommand("globalhome").setExecutor(new
 		// HomeSpawnCommand(this));
 		// this.getCommand("setglobalhome")
 		// .setExecutor(new HomeSpawnCommand(this));
 		// this.getCommand("delglobalhome")
 		// .setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("spawn").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("setspawn").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("delspawn").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("homespawn").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("homepassword").setExecutor(new HomeSpawnCommand(this));
-		this.getCommand("homeslist").setExecutor(new HomeSpawnCommand(this));
+		this.getCommand("spawn").setExecutor(command);
+		this.getCommand("setspawn").setExecutor(command);
+		this.getCommand("delspawn").setExecutor(command);
+		this.getCommand("homespawn").setExecutor(command);
+		this.getCommand("homepassword").setExecutor(command);
 	}
 }

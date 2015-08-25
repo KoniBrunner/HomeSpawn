@@ -110,47 +110,43 @@ public class ConfigSingleton {
 				changedSomething = true;
 			}
 			List<String> list = playerConfig.getStringList("List");
-			if (list.contains("Home")) {
+			if (list.contains("home")) {
 				if (playerConfig.contains(player.getDisplayName() + ".x")
 						&& playerConfig.contains(player.getDisplayName() + ".y")
 						&& playerConfig.contains(player.getDisplayName() + ".z")
 						&& playerConfig.contains(player.getDisplayName() + ".world")
 						&& playerConfig.contains(player.getDisplayName() + ".Yaw")
 						&& playerConfig.contains(player.getDisplayName() + ".Pitch")) {
-					if (!playerConfig.contains("Home.x")) {
-						playerConfig.createSection("Home.x");
-						playerConfig.set("Home.x", playerConfig.getInt(player.getDisplayName() + ".x"));
+					if (!playerConfig.contains("home.x")) {
+						playerConfig.createSection("home.x");
+						playerConfig.set("home.x", playerConfig.getInt(player.getDisplayName() + ".x"));
 						changedSomething = true;
 					}
-					if (!playerConfig.contains("Home.y")) {
-						playerConfig.createSection("Home.y");
-						playerConfig.set("Home.y", playerConfig.getInt(player.getDisplayName() + ".y"));
+					if (!playerConfig.contains("home.y")) {
+						playerConfig.createSection("home.y");
+						playerConfig.set("home.y", playerConfig.getInt(player.getDisplayName() + ".y"));
 						changedSomething = true;
 					}
-					if (!playerConfig.contains("Home.z")) {
-						playerConfig.createSection("Home.z");
-						playerConfig.set("Home.z", playerConfig.getInt(player.getDisplayName() + ".z"));
+					if (!playerConfig.contains("home.z")) {
+						playerConfig.createSection("home.z");
+						playerConfig.set("home.z", playerConfig.getInt(player.getDisplayName() + ".z"));
 						changedSomething = true;
 					}
-					if (!playerConfig.contains("Home.world")) {
-						playerConfig.createSection("Home.world");
-						playerConfig.set("Home.world", playerConfig.getString(player.getDisplayName() + ".world"));
+					if (!playerConfig.contains("home.world")) {
+						playerConfig.createSection("home.world");
+						playerConfig.set("home.world", playerConfig.getString(player.getDisplayName() + ".world"));
 						changedSomething = true;
 					}
-					if (!playerConfig.contains("Home.Yaw")) {
-						playerConfig.createSection("Home.Yaw");
-						playerConfig.set("Home.Yaw", playerConfig.getDouble(player.getDisplayName() + ".Yaw"));
+					if (!playerConfig.contains("home.Yaw")) {
+						playerConfig.createSection("home.Yaw");
+						playerConfig.set("home.Yaw", playerConfig.getDouble(player.getDisplayName() + ".Yaw"));
 						changedSomething = true;
 					}
-					if (!playerConfig.contains("Home.Pitch")) {
-						playerConfig.createSection("Home.Pitch");
-						playerConfig.set("Home.Pitch", playerConfig.getDouble(player.getDisplayName() + ".Pitch"));
+					if (!playerConfig.contains("home.Pitch")) {
+						playerConfig.createSection("home.Pitch");
+						playerConfig.set("home.Pitch", playerConfig.getDouble(player.getDisplayName() + ".Pitch"));
 						changedSomething = true;
 					}
-				} else {
-					list.remove("Home");
-					playerConfig.set("List", list);
-					changedSomething = true;
 				}
 			}
 			// ----------------------------------------------------------------
@@ -316,7 +312,8 @@ public class ConfigSingleton {
 		// also migrate old files to newer version.
 		String[] sections = new String[] { "Home.HomeSet", "Home.SentHome", "Home.NoHomeSet", "Home.NotVip",
 				"Home.HomeRemoved", "Home.LimitReached", "Spawn.NotSet", "Spawn.SpawnSet", "Spawn.SpawnNewSet",
-				"Spawn.SentToSpawn", "Spawn.Removed", "Wait", "Error.Args+", "Error.Args-", "Error.Args" };
+				"Spawn.SentToSpawn", "Spawn.Removed", "Wait", "Error.Permission", "Error.Args+", "Error.Args-",
+				"Error.Args", "Home.NotFound", "Home.Current", "Home.Reserved" };
 		boolean changedSomething = false;
 		for (int s = 0; s < sections.length; s++) {
 			if (!Messages.contains(sections[s])) {
@@ -325,7 +322,7 @@ public class ConfigSingleton {
 			}
 		}
 
-		String[][] messages = new String[][] { { "Home.HomeSet", "Home Set, You Can Now Use /home" },
+		String[][] messages = new String[][] { { "Home.HomeSet", "Home Set, You Can Now Use /home [homeName]" },
 				{ "Home.SentHome", "Welcome Home" }, { "Home.NoHomeSet", "You First Need To Set a Home With /sethome" },
 				{ "Home.HomeRemoved", "Home Removed" },
 				{ "Home.NotVip", "Sorry but you are not a VIP. You can not use multiple homes." },
@@ -341,7 +338,7 @@ public class ConfigSingleton {
 				{ "Error.Args+", "Too Much Infomation!" }, { "Error.Args-", "Not Enough Infomation" },
 				{ "Error.Args", "Too Little or Too Much Infomation" },
 				{ "Home.NotFound", "A home with this name does not exist!" },
-				{ "Home.Reserved", "That's a reserved home name!" } };
+				{ "Home.Current", "Your Current Homes Are:" }, { "Home.Reserved", "That's a reserved home name!" } };
 		// If a message is null or empty, we set the default value
 		for (int s = 0; s < messages.length; s++) {
 			if (Messages.get(messages[s][0]) != null && !Messages.getString(messages[s][0]).isEmpty()) {

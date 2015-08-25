@@ -18,7 +18,7 @@ commands:
     description: Deleates the spawn location from file
   homespawn:
     description: Shows Plugin Infomation
-  homeslist:
+  homelist:
     description: Shows The Current Homes
   homepassword:
     description: Allows the player to set a password and transfer homes to a new username on an offline mode server
