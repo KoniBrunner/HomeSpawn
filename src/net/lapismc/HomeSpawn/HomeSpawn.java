@@ -55,7 +55,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 				metrics.start();
 			} catch (IOException e) {
 				e.printStackTrace();
-				logger.severe("[HomeSpawn] Metrics Failed To Start!");
+				logger.severe("Metrics Failed To Start!");
 			}
 		} else {
 			getLogger().info("Metrics wasnt started because it is disabled in the config!");
@@ -166,7 +166,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 	}
 
 	public void Disable() {
-		logger.info("[HomeSpawn] Plugin Has Been Disabled!");
+		logger.info("Plugin Has Been Disabled!");
 		HandlerList.unregisterAll();
 	}
 

@@ -2,6 +2,7 @@ package net.lapismc.HomeSpawn;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class ConfigSingleton {
 			try {
 				playerConfigs.get(player.getUniqueId().toString()).save(file);
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't save player file!");
+				logger.severe("Couldn't save player file!");
 				e.printStackTrace();
 			}
 		}
@@ -69,11 +70,11 @@ public class ConfigSingleton {
 			FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(file);
 
 			if (!file.exists()) {
-				logger.info("[HomeSpawn] Creating Player(" + player.getUniqueId().toString() + ") configuration file!");
+				logger.info("Creating Player(" + player.getUniqueId().toString() + ") configuration file!");
 				try {
 					file.createNewFile();
 				} catch (IOException e) {
-					logger.severe("[HomeSpawn] Couldn't create player file!");
+					logger.severe("Couldn't create player file!");
 					e.printStackTrace();
 				}
 			}
@@ -110,6 +111,44 @@ public class ConfigSingleton {
 				changedSomething = true;
 			}
 			List<String> list = playerConfig.getStringList("List");
+			List<String> lowerList = new ArrayList<String>();
+			for (String item : list)
+			{
+				if (!item.toLowerCase().equals(item))
+				{
+					if (!playerConfig.contains(item+".x")) {
+						playerConfig.createSection(item.toLowerCase()+".x");
+						playerConfig.set(item.toLowerCase()+".x", playerConfig.getInt(item + ".x"));
+					}
+					if (!playerConfig.contains(item+".y")) {
+						playerConfig.createSection(item.toLowerCase()+".y");
+						playerConfig.set(item.toLowerCase()+".y", playerConfig.getInt(item + ".y"));
+					}
+					if (!playerConfig.contains(item+".z")) {
+						playerConfig.createSection(item.toLowerCase()+".z");
+						playerConfig.set(item.toLowerCase()+".z", playerConfig.getInt(item + ".z"));
+					}
+					if (!playerConfig.contains(item+".world")) {
+						playerConfig.createSection(item.toLowerCase()+".world");
+						playerConfig.set(item.toLowerCase()+".world", playerConfig.getString(item + ".world"));
+					}
+					if (!playerConfig.contains(item+".Yaw")) {
+						playerConfig.createSection(item.toLowerCase()+".Yaw");
+						playerConfig.set(item.toLowerCase()+".Yaw", playerConfig.getDouble(item + ".Yaw"));
+					}
+					if (!playerConfig.contains(item+".Pitch")) {
+						playerConfig.createSection(item.toLowerCase()+".Pitch");
+						playerConfig.set(item.toLowerCase()+".Pitch", playerConfig.getDouble(item + ".Pitch"));
+					}
+					changedSomething = true;
+				}
+				lowerList.add(item.toLowerCase());
+			}
+			if (changedSomething)
+			{
+				list = lowerList;
+				playerConfig.set("List", lowerList);
+			}
 			if (list.contains("home")) {
 				if (playerConfig.contains(player.getDisplayName() + ".x")
 						&& playerConfig.contains(player.getDisplayName() + ".y")
@@ -172,13 +211,13 @@ public class ConfigSingleton {
 	private void createPlayerData() {
 		PlayerDataDir = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "PlayerData");
 		if (!PlayerDataDir.exists()) {
-			logger.info("[HomeSpawn] Creating PlayerData Directory!");
+			logger.info("Creating PlayerData Directory!");
 			try {
 				boolean done = PlayerDataDir.mkdir();
 				if (!done)
 					throw new IOException("Can't create directory " + PlayerDataDir.getAbsolutePath());
 			} catch (Exception e) {
-				logger.severe("[HomeSpawn] Couldn't create PlayerData directory!");
+				logger.severe("Couldn't create PlayerData directory!");
 				e.printStackTrace();
 			}
 		}
@@ -189,7 +228,7 @@ public class ConfigSingleton {
 		try {
 			Spawn.save(file);
 		} catch (IOException e) {
-			logger.severe("[HomeSpawn] Couldn't save Spawn file!");
+			logger.severe("Couldn't save Spawn file!");
 			e.printStackTrace();
 		}
 	}
@@ -198,11 +237,11 @@ public class ConfigSingleton {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Spawn.yml");
 		Spawn = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
-			logger.info("[HomeSpawn] Creating Spawn configuration file!");
+			logger.info("Creating Spawn configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create spawn file!");
+				logger.severe("Couldn't create spawn file!");
 				e.printStackTrace();
 			}
 		}
@@ -231,7 +270,7 @@ public class ConfigSingleton {
 		try {
 			GlobalHomes.save(file);
 		} catch (IOException e) {
-			logger.severe("[HomeSpawn] Couldn't save GlobalHomes file!");
+			logger.severe("Couldn't save GlobalHomes file!");
 			e.printStackTrace();
 		}
 	}
@@ -240,11 +279,11 @@ public class ConfigSingleton {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "GlobalHomes.yml");
 		GlobalHomes = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
-			logger.info("[HomeSpawn] Creating GlobalHomes configuration file!");
+			logger.info("Creating GlobalHomes configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create GlobalHomes file!");
+				logger.severe("Couldn't create GlobalHomes file!");
 				e.printStackTrace();
 			}
 		}
@@ -267,7 +306,7 @@ public class ConfigSingleton {
 		try {
 			Update.save(file);
 		} catch (IOException e) {
-			logger.severe("[HomeSpawn] Couldn't save Update file!");
+			logger.severe("Couldn't save Update file!");
 			e.printStackTrace();
 		}
 	}
@@ -276,11 +315,11 @@ public class ConfigSingleton {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Update.yml");
 		Update = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
-			logger.info("[HomeSpawn] Creating Update configuration file!");
+			logger.info("Creating Update configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create Update file!");
+				logger.severe("Couldn't create Update file!");
 				e.printStackTrace();
 			}
 		}
@@ -291,7 +330,7 @@ public class ConfigSingleton {
 		try {
 			Messages.save(file);
 		} catch (IOException e) {
-			logger.severe("[HomeSpawn] Couldn't save Messages file!");
+			logger.severe("Couldn't save Messages file!");
 			e.printStackTrace();
 		}
 	}
@@ -300,11 +339,11 @@ public class ConfigSingleton {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Messages.yml");
 		Messages = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
-			logger.info("[HomeSpawn] Creating Messages configuration file!");
+			logger.info("Creating Messages configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create messages file!");
+				logger.severe("Couldn't create messages file!");
 				e.printStackTrace();
 			}
 		}
@@ -362,7 +401,7 @@ public class ConfigSingleton {
 		try {
 			Passwords.save(file);
 		} catch (IOException e) {
-			logger.severe("[HomeSpawn] Couldn't save Passwords file!");
+			logger.severe("Couldn't save Passwords file!");
 			e.printStackTrace();
 		}
 	}
@@ -372,11 +411,11 @@ public class ConfigSingleton {
 				+ "Passwords.yml");
 		Passwords = YamlConfiguration.loadConfiguration(file);
 		if (!file.exists()) {
-			logger.info("[HomeSpawn] Creating Passwords configuration file!");
+			logger.info("Creating Passwords configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				logger.severe("[HomeSpawn] Couldn't create passwords file!");
+				logger.severe("Couldn't create passwords file!");
 				e.printStackTrace();
 			}
 		}

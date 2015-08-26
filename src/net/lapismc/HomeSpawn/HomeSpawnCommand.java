@@ -69,7 +69,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.Reserved"));
 							return false;
 						}
-						createHomeLocation(player, getHomes, args[0].toLowerCase());
+						createHomeLocation(player, getHomes, getHomeName(args[0]));
 						player.sendMessage(ChatColor.GOLD
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.HomeSet"));
 					} else {
@@ -99,7 +99,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Home.NotVip"));
 							return false;
 						}
-						sendToHomeLocation(player, getHomes, args[0].toLowerCase());
+						sendToHomeLocation(player, getHomes, getHomeName(args[0]));
 					}
 					return true;
 				} else {
@@ -111,8 +111,8 @@ public class HomeSpawnCommand implements CommandExecutor {
 					FileConfiguration getHomes = ConfigSingleton.getInstance(plugin).getPlayerConfig(player);
 					List<String> list = getHomes.getStringList("List");
 					if (args.length == 1) {
-						if (list.contains(args[0].toLowerCase())) {
-							list.remove(args[0].toLowerCase());
+						if (list.contains(getHomeName(args[0]))) {
+							list.remove(getHomeName(args[0]));
 							getHomes.set("List", list);
 							int HomesNumb = getHomes.getInt("Numb");
 							getHomes.set("Numb", HomesNumb - 1);
@@ -335,6 +335,10 @@ public class HomeSpawnCommand implements CommandExecutor {
 			sender.sendMessage("You Must Be a Player To Do That");
 		}
 		return false;
+	}
+
+	private String getHomeName(String name) {
+		return name.toLowerCase().replace('.', '_');
 	}
 
 	private void sendToHomeLocation(Player player, FileConfiguration getHomes, String homeName) {
