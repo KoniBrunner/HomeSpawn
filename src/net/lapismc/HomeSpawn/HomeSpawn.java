@@ -1,6 +1,5 @@
 package net.lapismc.HomeSpawn;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -9,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -20,29 +18,26 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.mcstats.Metrics;
 
 import net.gravitydevelopment.updater.Updater;
+import net.gravitydevelopment.updater.Updater.UpdateCallback;
 import net.gravitydevelopment.updater.Updater.UpdateResult;
 import net.gravitydevelopment.updater.Updater.UpdateType;
 
-public class HomeSpawn extends JavaPlugin implements Listener {
+public class HomeSpawn extends JavaPlugin implements Listener, UpdateCallback {
 
 	public HomeSpawn plugin;
 	public Permission PlayerPerm = new Permission("homespawn.player");
 	public Permission AdminPerm = new Permission("homespawn.admin");
 	public Permission VIPPerm = new Permission("homespawn.vip");
-	HashMap<Player, Location> HomeSpawnLocations = new HashMap<Player, Location>();
-	HashMap<Player, Integer> HomeSpawnTimeLeft = new HashMap<Player, Integer>();
+	public HashMap<Player, Location> HomeSpawnLocations = new HashMap<Player, Location>();
+	public HashMap<Player, Integer> HomeSpawnTimeLeft = new HashMap<Player, Integer>();
 	public HomeSpawnListener pl;
 	public final Logger logger = this.getLogger();
 
 	@Override
 	public void onEnable() {
+		Configs();
 		Update();
 		Enable();
-		try {
-			Configs();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		Metrics();
 		Commands();
 		CommandDelay();
@@ -64,93 +59,31 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 
 	private void Update() {
 		if (getConfig().getBoolean("AutoUpdate")) {
-			Updater updater = new Updater(this, 86785, this.getFile(), UpdateType.DEFAULT, true);
-			updatecheck(updater);
+			new Updater(this, 86785, this.getFile(), UpdateType.DEFAULT, this, true);
 		} else {
-			Updater updater = new Updater(this, 86785, this.getFile(), UpdateType.NO_DOWNLOAD, true);
-			updatecheck(updater);
+			new Updater(this, 86785, this.getFile(), UpdateType.NO_DOWNLOAD, this, true);
 		}
 	}
 
-	private void updatecheck(Updater updater) {
-		File file = new File(this.getDataFolder().getAbsolutePath() + File.separator + "Update.yml");
-		FileConfiguration getUpdate = YamlConfiguration.loadConfiguration(file);
+	@Override
+	public void onFinish(Updater updater) {
+		// Called after update has finished
+		FileConfiguration getUpdate = ConfigSingleton.getInstance(this).Update;
 		if (updater.getResult() == UpdateResult.SUCCESS) {
 			this.getLogger().info("Updated, Reload or restart to install the update!");
+			getUpdate.set("Avail", "false");
 		} else if (updater.getResult() == UpdateResult.NO_UPDATE) {
 			this.getLogger().info("No Update Available");
-			if (file.exists()) {
-				if (getUpdate.contains("Avail")) {
-					getUpdate.set("Avail", "false");
-				} else {
-					getUpdate.createSection("Avail");
-					try {
-						getUpdate.save(file);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					getUpdate.set("Avail", "false");
-				}
-			} else {
-				try {
-					file.createNewFile();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				getUpdate.createSection("Avail");
-				try {
-					getUpdate.save(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				getUpdate.set("Avail", "false");
-				try {
-					getUpdate.save(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		} else
-			if (updater.getResult() == UpdateResult.UPDATE_AVAILABLE && updater.getResult() != UpdateResult.SUCCESS) {
+			getUpdate.set("Avail", "false");
+		} else if (updater.getResult() == UpdateResult.UPDATE_AVAILABLE) {
 			this.getLogger().info("An update is Available for HomeSpawn, It can be downloaded from,"
 					+ " dev.bukkit.org/bukkit-plugins/homespawn");
-			if (file.exists()) {
-				if (!getConfig().getBoolean("AutoUpdate")) {
-					if (getUpdate.contains("Avail")) {
-						getUpdate.set("Avail", "true");
-					} else {
-						getUpdate.createSection("Avail");
-						getUpdate.set("Avail", "true");
-						try {
-							getUpdate.save(file);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			} else {
-				try {
-					file.createNewFile();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				getUpdate.createSection("Avail");
-				getUpdate.set("Avail", "true");
-				try {
-					getUpdate.save(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			getUpdate.set("Avail", "true");
 		} else {
 			this.getLogger().severe(ChatColor.RED + "Something Went Wrong Updating!");
 			getUpdate.set("Avail", "false");
 		}
-		try {
-			getUpdate.save(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		ConfigSingleton.getInstance(this).saveUpdate();
 	}
 
 	@Override
@@ -170,7 +103,7 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 		HandlerList.unregisterAll();
 	}
 
-	public void Configs() throws IOException {
+	public void Configs() {
 		saveDefaultConfig();
 		getConfig().options().copyDefaults(true);
 		saveConfig();
@@ -185,35 +118,6 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 			Bukkit.broadcast(ChatColor.GOLD + "Player " + ChatColor.RED + player.getName() + ChatColor.GOLD
 					+ " Has Reloaded Homespawn!", "homespawn.admin");
 			this.logger.info("Player " + player.getName() + " Has Reloaded Homespawn!");
-		}
-	}
-
-	public void help(Player player) {
-		if (player != null) { // TODO no rights check for help?
-			player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn" + ChatColor.GOLD
-					+ "-----------------------");
-			player.sendMessage(ChatColor.RED + "[name] = VIP Only");
-			player.sendMessage(ChatColor.RED + "/home [name]:" + ChatColor.GOLD + " Sends You To The Home Specified");
-			player.sendMessage(
-					ChatColor.RED + "/sethome [name]:" + ChatColor.GOLD + " Sets Your Home At Your Current Location");
-			player.sendMessage(ChatColor.RED + "/delhome [name]:" + ChatColor.GOLD + " Removes The Specified Home");
-			player.sendMessage(ChatColor.RED + "/spawn:" + ChatColor.GOLD + " Sends You To Spawn");
-			if (player.hasPermission("homespawn.admin")) {
-				player.sendMessage(ChatColor.RED + "/setspawn:" + ChatColor.GOLD + " Sets The Server Spawn");
-				player.sendMessage(ChatColor.RED + "/setspawn new:" + ChatColor.GOLD
-						+ " All New Players Will Be Sent To This Spawn");
-				player.sendMessage(ChatColor.RED + "/delspawn:" + ChatColor.GOLD + " Removes The Server Spawn");
-				player.sendMessage(ChatColor.RED + "/homespawn:" + ChatColor.GOLD + " Displays Plugin Infomation");
-				player.sendMessage(
-						ChatColor.RED + "/homespawn reload:" + ChatColor.GOLD + " Reloads The Plugin Configs");
-				player.sendMessage(ChatColor.GOLD + "---------------------------------------------------------");
-				return;
-			} else {
-				player.sendMessage(ChatColor.GOLD + "---------------------------------------------------------");
-			}
-
-		} else {
-			return;
 		}
 	}
 
@@ -280,5 +184,9 @@ public class HomeSpawn extends JavaPlugin implements Listener {
 		this.getCommand("delspawn").setExecutor(command);
 		this.getCommand("homespawn").setExecutor(command);
 		this.getCommand("homepassword").setExecutor(command);
+		this.getCommand("tpa").setExecutor(command);
+		this.getCommand("tpaccept").setExecutor(command);
+		this.getCommand("tpdeny").setExecutor(command);
 	}
+
 }

@@ -314,12 +314,25 @@ public class ConfigSingleton {
 	private void createUpdate() {
 		File file = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Update.yml");
 		Update = YamlConfiguration.loadConfiguration(file);
+		boolean changedSomething = false;
+		if (!Update.contains("Avail")) {
+			Update.createSection("Avail");
+			Update.set("Avail", "false");
+			changedSomething = true;
+		}
 		if (!file.exists()) {
 			logger.info("Creating Update configuration file!");
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
 				logger.severe("Couldn't create Update file!");
+				e.printStackTrace();
+			}
+		}
+		if (changedSomething) {
+			try {
+				Update.save(file);
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}

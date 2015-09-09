@@ -262,8 +262,6 @@ public class Updater {
 		if (this.result != UpdateResult.FAIL_BADID) {
 			this.thread = new Thread(new UpdateRunnable());
 			this.thread.start();
-		} else {
-			runUpdater();
 		}
 	}
 

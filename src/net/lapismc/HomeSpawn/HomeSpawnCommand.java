@@ -155,7 +155,8 @@ public class HomeSpawnCommand implements CommandExecutor {
 						player.sendMessage(ChatColor.GOLD
 								+ ConfigSingleton.getInstance(plugin).Messages.getString("Spawn.SpawnNewSet"));
 					} else {
-						plugin.help(player);
+						if (player.hasPermission("homespawn.help"))
+							help(player, "2");
 						return false;
 					}
 					ConfigSingleton.getInstance(plugin).saveSpawn();
@@ -231,11 +232,15 @@ public class HomeSpawnCommand implements CommandExecutor {
 				if (args.length == 0) {
 					player.sendMessage(ChatColor.GOLD + "---------------" + ChatColor.RED + "Homespawn" + ChatColor.GOLD
 							+ "---------------");
-					player.sendMessage(ChatColor.RED + "Author:" + ChatColor.GOLD + " Dart2112");
+					player.sendMessage(ChatColor.RED + "Author:" + ChatColor.GOLD + " Dart2112, Ardamedonner");
 					player.sendMessage(
 							ChatColor.RED + "Version: " + ChatColor.GOLD + plugin.getDescription().getVersion());
 					player.sendMessage(ChatColor.RED + "Bukkit Dev:" + ChatColor.GOLD + " http://goo.gl/2Selqa");
-					player.sendMessage(ChatColor.RED + "Use /homespawn Help For Commands!");
+					if (player.hasPermission("homespawn.help")) {
+						player.sendMessage(ChatColor.RED + "Use /homespawn help 1 for home commands!");
+						player.sendMessage(ChatColor.RED + "Use /homespawn help 2 for spawn commands!");
+						player.sendMessage(ChatColor.RED + "Use /homespawn help 3 for tpa commands!");
+					}
 					player.sendMessage(ChatColor.GOLD + "-----------------------------------------");
 				} else if (args.length == 1) {
 					if (args[0].equalsIgnoreCase("reload")) {
@@ -250,7 +255,9 @@ public class HomeSpawnCommand implements CommandExecutor {
 									+ ConfigSingleton.getInstance(plugin).Messages.getString("Error.Permission"));
 						}
 					} else if (args[0].equalsIgnoreCase("help")) {
-						plugin.help(player);
+						if (player.hasPermission("homespawn.help")) {
+							help(player, args.length > 1 ? args[1] : "0");
+						}
 					}
 					return true;
 				} else {
@@ -282,7 +289,7 @@ public class HomeSpawnCommand implements CommandExecutor {
 						}
 						return true;
 					} else if (args.length == 1) {
-						PassHelp(player);
+						help(player, "4");
 					}
 				} else {
 					player.sendMessage("This Command Isnt Used As This Is An Online Mode Server");
@@ -337,6 +344,64 @@ public class HomeSpawnCommand implements CommandExecutor {
 		return false;
 	}
 
+	private void help(Player player, String pageNumber) {
+		if (player != null && player.hasPermission("homespawn.help")) {
+			switch (pageNumber) {
+			case "1":
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn home help (1/4)" + ChatColor.GOLD
+						+ "---------------------");
+				player.sendMessage(ChatColor.RED + "/homelist:" + ChatColor.GOLD + " Lists all specified home");
+				player.sendMessage(
+						ChatColor.RED + "/sethome:" + ChatColor.GOLD + " Sets your home at your current location");
+				player.sendMessage(ChatColor.RED + "/home:" + ChatColor.GOLD + " Sends you to your home");
+				player.sendMessage(ChatColor.GOLD + "VIP Only:");
+				player.sendMessage(
+						ChatColor.RED + "/sethome [name]:" + ChatColor.GOLD + " Sets your home at your current location");
+				player.sendMessage(ChatColor.RED + "/home [name]:" + ChatColor.GOLD + " Sends you to the home specified");
+				player.sendMessage(ChatColor.RED + "/delhome [name]:" + ChatColor.GOLD + " Removes the specified home");
+				break;
+			case "2":
+				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn spawn help (2/4)" + ChatColor.GOLD
+						+ "-----------------------");
+				player.sendMessage(ChatColor.RED + "/spawn:" + ChatColor.GOLD + " Sends you to spawn");
+				if (player.hasPermission("homespawn.admin")) {
+					player.sendMessage(ChatColor.RED + "/setspawn:" + ChatColor.GOLD + " Sets the server spawn");
+					player.sendMessage(ChatColor.RED + "/setspawn new:" + ChatColor.GOLD
+							+ " All New Players Will Be Sent To This Spawn");
+					player.sendMessage(ChatColor.RED + "/delspawn:" + ChatColor.GOLD + " Removes the server spawn");
+					player.sendMessage(ChatColor.RED + "/homespawn:" + ChatColor.GOLD + " Displays plugin infomation");
+					player.sendMessage(
+							ChatColor.RED + "/homespawn reload:" + ChatColor.GOLD + " Reloads the plugin configs");
+					return;
+				}
+				break;
+			case "3":
+				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn tpa help (3/4)" + ChatColor.GOLD
+						+ "-----------------------");
+				break;
+			case "4":
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn password help (4/4)" + ChatColor.GOLD
+						+ "---------------------");
+				player.sendMessage(ChatColor.RED + "/homepassword help:" + ChatColor.GOLD + " Shows This Text");
+				player.sendMessage(ChatColor.RED + "/homepassword set [password] [password]:" + ChatColor.GOLD
+						+ " Sets Your Transfer Password");
+				player.sendMessage(ChatColor.RED + "/homepassword transfer [old username] [password]:" + ChatColor.GOLD
+						+ " Transfers Playerdata From Old Username To Current Username");
+ 				break;
+			default:
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn help" + ChatColor.GOLD
+						+ "---------------------");
+				player.sendMessage(ChatColor.RED + "Use /homespawn help 1 for home commands!");
+				player.sendMessage(ChatColor.RED + "Use /homespawn help 2 for spawn commands!");
+				player.sendMessage(ChatColor.RED + "Use /homespawn help 3 for tpa commands!");
+				player.sendMessage(ChatColor.RED + "Use /homespawn help 4 for password command!");
+			}
+			player.sendMessage(ChatColor.GOLD + "-----------------------------------------------------");
+		} else {
+			return;
+		}
+	}
+
 	private String getHomeName(String name) {
 		return name.toLowerCase().replace('.', '_');
 	}
@@ -368,7 +433,8 @@ public class HomeSpawnCommand implements CommandExecutor {
 				String list2 = list.toString();
 				String list3 = list2.replace("[", " ");
 				String StringList = list3.replace("]", " ");
-				player.sendMessage(ChatColor.GOLD + ConfigSingleton.getInstance(plugin).Messages.getString("Home.Current"));
+				player.sendMessage(
+						ChatColor.GOLD + ConfigSingleton.getInstance(plugin).Messages.getString("Home.Current"));
 				player.sendMessage(ChatColor.RED + StringList);
 			}
 		}
@@ -403,15 +469,4 @@ public class HomeSpawnCommand implements CommandExecutor {
 		getHomes.set(homeName + ".Pitch", player.getLocation().getPitch());
 	}
 
-	private void PassHelp(Player player) {
-		player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn" + ChatColor.GOLD
-				+ "---------------------");
-		player.sendMessage(ChatColor.RED + "/homepassword help:" + ChatColor.GOLD + " Shows This Text");
-		player.sendMessage(ChatColor.RED + "/homepassword set [password] [password]:" + ChatColor.GOLD
-				+ " Sets Your Transfer Password");
-		player.sendMessage(ChatColor.RED + "/homepassword transfer [old username] [password]:" + ChatColor.GOLD
-				+ " Transfers Playerdata From Old Username To Current Username");
-		player.sendMessage(ChatColor.GOLD + "-----------------------------------------------------");
-		return;
-	}
 }

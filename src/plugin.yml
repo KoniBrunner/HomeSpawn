@@ -2,7 +2,8 @@ name: Homespawn
 main: net.lapismc.HomeSpawn.HomeSpawn
 version: 1.1.7
 description: >
-             The Basic Home And Spawn Plugin
+             The basic home, spawn and tpa plugin
+
 commands:
   home:
     description: Sends the player to the home they set with /sethome
@@ -15,33 +16,72 @@ commands:
   setspawn:
     description: Sets the spawn location for the server so you can use /spawn to get back there
   delspawn:
-    description: Deleates the spawn location from file
+    description: Deletes the spawn location from file
   homespawn:
-    description: Shows Plugin Infomation
+    description: Shows plugin infomation
   homelist:
-    description: Shows The Current Homes
+    description: Shows the current homes
   homepassword:
     description: Allows the player to set a password and transfer homes to a new username on an offline mode server
+  tpa:
+    description: Send a teleport request to a player
+  tpaccept:
+    description: Accepts a teleport request from another player
+  tpdeny:
+    description: Denys a teleport request from another player
+
 permissions:
 homespawn.*:
-    description: Gives Access To All Commands
+    description: Gives access to all commands
     children:
+        homespawn.help: true
         homespawn.player: true
         homespawn.admin: true
         homespawn.bypassdelay: true
+        homespawn.tpasend: true
+        homespawn.tpareceive: true
+        homespawn.tpaccept: true
+        homespawn.tpdeny: true
+homespawn.tpa.*:
+    description: Gives access to all tpa commands
+    children:
+        homespawn.help: true
+        homespawn.tpasend: true
+        homespawn.tpareceive: true
+        homespawn.tpaccept: true
+        homespawn.tpdeny: true
 homespawn.bypassdelay:
-    description: Allows the player to teleport imediatly
+    description: Allows the player to teleport immediately
     default: false
 homespawn.player:
-    description: Allows Player Commands
+    description: Allows player commands
+    default: false
+homespawn.help:
+    description: Allows help access 
     default: false
 homespawn.admin:
     children:
         homespawn.player: true
         homespawn.bypassdelay: true
-    description: Allows ALL Commands
+    description: Allows all commands
     default: op
 homespawn.vip:
     children:
         homespawn.player: true
+    default: false
+homespawn.tpasend:
+    description: Allows you to send tpa requests
+    default: false
+homespawn.tpareceive:
+    description: Allows you to receive tpa requests
+    default: false
+homespawn.tpaccept:
+    description: Allows you to accept tpa requests
+    children:
+        homespawn.tpareceive: true
+    default: false
+homespawn.tpdeny:
+    description: Allows you to deny tpa requests 
+    children:
+        homespawn.tpareceive: true
     default: false
