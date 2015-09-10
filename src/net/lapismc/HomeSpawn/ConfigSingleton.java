@@ -20,6 +20,7 @@ public class ConfigSingleton {
 	private Map<String, FileConfiguration> playerConfigs = new HashMap<String, FileConfiguration>();
 
 	public File PlayerDataDir = null;
+	public FileConfiguration Plugin = null;
 	public FileConfiguration Spawn = null;
 	public FileConfiguration GlobalHomes = null;
 	public FileConfiguration Messages = null;
@@ -30,6 +31,7 @@ public class ConfigSingleton {
 		this.plugin = plugin;
 		logger = plugin.getLogger();
 		createPlayerData();
+		createPlugin();
 		createSpawn();
 		createGlobalHomes();
 		createUpdate();
@@ -46,6 +48,14 @@ public class ConfigSingleton {
 
 	public static void Reset() {
 		instance = null;
+	}
+
+	public void savePlugin() {
+		plugin.saveConfig();
+	}
+
+	private void createPlugin() {
+		Plugin = plugin.getConfig();
 	}
 
 	public void savePlayerConfig(Player player) {

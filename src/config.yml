@@ -11,3 +11,7 @@ VIPHomesLimit: 3
 AdminHomesLimit: 5
 ## This Time Is How Long THe Player Must Wait Without Being Hit By Another Player Before They Teleport, Set To 0 To Disable
 TeleportTime: 5
+## Time how long a tpa request keep alive
+TpaKeepAlive: 30
+## Time between tpa requests
+TpaCoolDown: 10

@@ -3,7 +3,9 @@ package net.lapismc.HomeSpawn;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,6 +18,9 @@ import org.bukkit.entity.Player;
 
 public class HomeSpawnCommand implements CommandExecutor {
 	private final HomeSpawn plugin;
+
+	private Map<String, Long> tpaCooldown = new Hashtable<String, Long>();
+	private Map<String, String> currentRequest = new Hashtable<String, String>();
 
 	public HomeSpawnCommand(HomeSpawn plugin) {
 		this.plugin = plugin;
@@ -337,6 +342,91 @@ public class HomeSpawnCommand implements CommandExecutor {
 					player.sendMessage(ChatColor.DARK_RED
 							+ ConfigSingleton.getInstance(plugin).Messages.getString("Error.Permission"));
 				}
+			} else if (cmd.getName().equalsIgnoreCase("tpa")) {
+				// ---------------------------------------------------
+				// tpa stuff (taken from other tpa plugin)
+				// ---------------------------------------------------
+				if (!player.hasPermission("tpa.bypassdelay")) {
+					int cooldown = plugin.getConfig().getInt("TpaCoolDown");
+					if (tpaCooldown.containsKey(player.getName())) {
+						long diff = (System.currentTimeMillis()
+								- ((Long) tpaCooldown.get(sender.getName())).longValue()) / 1000L;
+						if (diff < (long) cooldown) {
+							player.sendMessage(ChatColor.RED + "TPA: You must wait " + cooldown
+									+ " seconds between sending teleport requests!");
+							return false;
+						}
+					}
+				}
+				if (args.length > 0) {
+					long keepAlive = plugin.getConfig().getLong("TpaKeepAlive") * 20L;
+					@SuppressWarnings("deprecation")
+					final Player target = plugin.getServer().getPlayer(args[0]);
+					if (target == null) {
+						sender.sendMessage(
+								ChatColor.RED + "TPA: You can only send a teleport request to online players!");
+						return false;
+					}
+					if (target == player) {
+						sender.sendMessage(ChatColor.RED + "TPA: You can't teleport to yourself!");
+						return false;
+					}
+					sendRequest(player, target);
+					plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+						public void run() {
+							killRequest(target.getName());
+						}
+
+					}, keepAlive);
+					tpaCooldown.put(player.getName(), Long.valueOf(System.currentTimeMillis()));
+				} else {
+					player.sendMessage("To send a teleport request to a player use:");
+					player.sendMessage("/tpa [playerName]");
+				}
+			}
+			if (cmd.getName().equalsIgnoreCase("tpaccept")) {
+				if (currentRequest.containsKey(player.getName())) {
+					@SuppressWarnings("deprecation")
+					Player heIsGoingOutOnADate = plugin.getServer()
+							.getPlayer((String) currentRequest.get(player.getName()));
+					currentRequest.remove(player.getName());
+					if (heIsGoingOutOnADate != null) {
+						heIsGoingOutOnADate.teleport(player);
+						player.sendMessage(ChatColor.GRAY + "TPA: Teleporting...");
+						heIsGoingOutOnADate.sendMessage(ChatColor.GRAY + "TPA: Teleporting...");
+					} else {
+						sender.sendMessage(ChatColor.RED + "TPA: The player you tried to teleport to is offline!");
+						return false;
+					}
+				} else {
+					sender.sendMessage((new StringBuilder()).append(ChatColor.RED)
+							.append("(TPA) You don't have open tpa requests.").toString());
+					return false;
+				}
+			}
+			if (cmd.getName().equalsIgnoreCase("tpdeny")) {
+				if (currentRequest.containsKey(player.getName())) {
+					@SuppressWarnings("deprecation")
+					Player poorRejectedGuy = plugin.getServer()
+							.getPlayer((String) currentRequest.get(player.getName()));
+					currentRequest.remove(player.getName());
+					if (poorRejectedGuy != null) {
+						poorRejectedGuy
+								.sendMessage(ChatColor.RED + player.getName() + " rejected your teleport request!");
+						player.sendMessage(ChatColor.GRAY + poorRejectedGuy.getName() + " was rejected!");
+						return true;
+					} else {
+						return true;
+					}
+				} else {
+					sender.sendMessage((new StringBuilder()).append(ChatColor.RED).append("(TPA) No open tp requests!")
+							.toString());
+					return false;
+				}
+			} else {
+				plugin.logger.severe("WTF!?! Unregistered command here?");
+				return false;
 			}
 		} else {
 			sender.sendMessage("You Must Be a Player To Do That");
@@ -348,21 +438,22 @@ public class HomeSpawnCommand implements CommandExecutor {
 		if (player != null && player.hasPermission("homespawn.help")) {
 			switch (pageNumber) {
 			case "1":
-				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn home help (1/4)" + ChatColor.GOLD
-						+ "---------------------");
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED
+						+ "Homespawn home help (1/4)" + ChatColor.GOLD + "---------------------");
 				player.sendMessage(ChatColor.RED + "/homelist:" + ChatColor.GOLD + " Lists all specified home");
 				player.sendMessage(
 						ChatColor.RED + "/sethome:" + ChatColor.GOLD + " Sets your home at your current location");
 				player.sendMessage(ChatColor.RED + "/home:" + ChatColor.GOLD + " Sends you to your home");
 				player.sendMessage(ChatColor.GOLD + "VIP Only:");
+				player.sendMessage(ChatColor.RED + "/sethome [name]:" + ChatColor.GOLD
+						+ " Sets your home at your current location");
 				player.sendMessage(
-						ChatColor.RED + "/sethome [name]:" + ChatColor.GOLD + " Sets your home at your current location");
-				player.sendMessage(ChatColor.RED + "/home [name]:" + ChatColor.GOLD + " Sends you to the home specified");
+						ChatColor.RED + "/home [name]:" + ChatColor.GOLD + " Sends you to the home specified");
 				player.sendMessage(ChatColor.RED + "/delhome [name]:" + ChatColor.GOLD + " Removes the specified home");
 				break;
 			case "2":
-				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn spawn help (2/4)" + ChatColor.GOLD
-						+ "-----------------------");
+				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED
+						+ "Homespawn spawn help (2/4)" + ChatColor.GOLD + "-----------------------");
 				player.sendMessage(ChatColor.RED + "/spawn:" + ChatColor.GOLD + " Sends you to spawn");
 				if (player.hasPermission("homespawn.admin")) {
 					player.sendMessage(ChatColor.RED + "/setspawn:" + ChatColor.GOLD + " Sets the server spawn");
@@ -376,21 +467,24 @@ public class HomeSpawnCommand implements CommandExecutor {
 				}
 				break;
 			case "3":
-				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED + "Homespawn tpa help (3/4)" + ChatColor.GOLD
-						+ "-----------------------");
+				player.sendMessage(ChatColor.GOLD + "-----------------------" + ChatColor.RED
+						+ "Homespawn tpa help (3/4)" + ChatColor.GOLD + "-----------------------");
+				player.sendMessage(ChatColor.RED + "/tpa [playerName]:" + ChatColor.GOLD + " Sends a teleport request to playerName");
+				player.sendMessage(ChatColor.RED + "/tpaccept:" + ChatColor.GOLD + " Accepts a teleport request");
+				player.sendMessage(ChatColor.RED + "/tpdeny:" + ChatColor.GOLD + " Denies a teleport request");
 				break;
 			case "4":
-				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn password help (4/4)" + ChatColor.GOLD
-						+ "---------------------");
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED
+						+ "Homespawn password help (4/4)" + ChatColor.GOLD + "---------------------");
 				player.sendMessage(ChatColor.RED + "/homepassword help:" + ChatColor.GOLD + " Shows This Text");
 				player.sendMessage(ChatColor.RED + "/homepassword set [password] [password]:" + ChatColor.GOLD
 						+ " Sets Your Transfer Password");
 				player.sendMessage(ChatColor.RED + "/homepassword transfer [old username] [password]:" + ChatColor.GOLD
 						+ " Transfers Playerdata From Old Username To Current Username");
- 				break;
+				break;
 			default:
-				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn help" + ChatColor.GOLD
-						+ "---------------------");
+				player.sendMessage(ChatColor.GOLD + "---------------------" + ChatColor.RED + "Homespawn help"
+						+ ChatColor.GOLD + "---------------------");
 				player.sendMessage(ChatColor.RED + "Use /homespawn help 1 for home commands!");
 				player.sendMessage(ChatColor.RED + "Use /homespawn help 2 for spawn commands!");
 				player.sendMessage(ChatColor.RED + "Use /homespawn help 3 for tpa commands!");
@@ -467,6 +561,37 @@ public class HomeSpawnCommand implements CommandExecutor {
 		getHomes.set(homeName + ".world", player.getWorld().getName());
 		getHomes.set(homeName + ".Yaw", player.getLocation().getYaw());
 		getHomes.set(homeName + ".Pitch", player.getLocation().getPitch());
+	}
+
+	public boolean killRequest(String key) {
+		if (currentRequest.containsKey(key)) {
+			@SuppressWarnings("deprecation")
+			Player loser = plugin.getServer().getPlayer(currentRequest.get(key));
+			if (loser != null)
+				loser.sendMessage(ChatColor.RED + "Your teleport request timed out.");
+			currentRequest.remove(key);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void sendRequest(Player sender, Player recipient) {
+		sender.sendMessage("Sending a teleport request to " + recipient.getName() + ".");
+		String sendtpaccept = "";
+		String sendtpdeny = "";
+		if (recipient.hasPermission("simpletp.tpaccept"))
+			sendtpaccept = "To accept the teleport request, type " + ChatColor.RED + "/tpaccept" + ChatColor.RESET
+					+ ".";
+		else
+			sendtpaccept = "";
+		if (recipient.hasPermission("simpletp.tpdeny"))
+			sendtpdeny = "To deny the teleport request, type " + ChatColor.RED + "/tpdeny" + ChatColor.RESET + ".";
+		else
+			sendtpdeny = "";
+		recipient.sendMessage(ChatColor.RED + sender.getName() + ChatColor.RESET
+				+ " has sent a request to teleport to you." + sendtpaccept + sendtpdeny);
+		currentRequest.put(recipient.getName(), sender.getName());
 	}
 
 }
